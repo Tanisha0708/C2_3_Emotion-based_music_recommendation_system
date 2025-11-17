@@ -1,0 +1,1739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Emotion Music Recommendation - Accessible Emotion Detection</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6" crossorigin="anonymous" />
+  <link href="https://fonts.googleapis.com/css2?family=Bigelow+Rules&display=swap" rel="stylesheet">
+  <link type="text/css" href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf"
+    crossorigin="anonymous"></script>
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    /* Skip Link for Accessibility */
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #000;
+      color: #fff;
+      padding: 8px;
+      text-decoration: none;
+      z-index: 1000;
+    }
+
+    .skip-link:focus {
+      top: 0;
+    }
+
+    body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+        'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .main-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 30px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      padding: 40px;
+      width: 100%;
+    }
+
+    .page-header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .page-title {
+      font-family: 'Bigelow Rules', cursive;
+      font-size: 64px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 10px;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .subtitle {
+      font-size: 24px;
+      color: #666;
+      font-weight: 300;
+    }
+
+    .action-section {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .button-group {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-bottom: 30px;
+    }
+
+    .action-btn, .capture-btn, .upload-btn, .stop-camera-btn, .try-another-btn, .accessibility-btn {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 25px 50px;
+      border: none;
+      border-radius: 15px;
+      cursor: pointer;
+      font-size: 22px;
+      font-weight: bold;
+      transition: all 0.3s ease;
+      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+      letter-spacing: 0.5px;
+      outline: none;
+      min-height: 60px;
+    }
+
+    /* Accessibility Toggle Button */
+    .accessibility-toggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 20px 30px;
+      border: none;
+      border-radius: 15px;
+      cursor: pointer;
+      font-size: 20px;
+      font-weight: bold;
+      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+      z-index: 1001;
+      transition: all 0.3s ease;
+    }
+
+    .accessibility-toggle:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 35px rgba(102, 126, 234, 0.5);
+    }
+
+    .accessibility-toggle:focus {
+      outline: 4px solid #000;
+      outline-offset: 2px;
+    }
+
+    /* Accessibility Toolbar */
+    .accessibility-toolbar {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: white;
+      border-radius: 15px;
+      padding: 15px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      z-index: 1000;
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+      min-width: 200px;
+    }
+
+    .accessibility-toolbar.show {
+      display: flex;
+    }
+
+    .accessibility-btn {
+      padding: 15px 25px;
+      font-size: 16px;
+      min-height: 50px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .accessibility-btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .accessibility-btn.active {
+      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    }
+
+    /* High Contrast Mode */
+    body.high-contrast {
+      background: #000;
+      color: #fff;
+    }
+
+    body.high-contrast .main-container {
+      background: #000;
+      color: #fff;
+      border: 3px solid #fff;
+    }
+
+    body.high-contrast .action-btn,
+    body.high-contrast .capture-btn,
+    body.high-contrast .upload-btn {
+      background: #fff;
+      color: #000;
+      border: 3px solid #000;
+    }
+
+    body.high-contrast .emotion-card {
+      background: #fff;
+      color: #000;
+      border: 3px solid #000;
+    }
+
+    /* Large Text Mode */
+    body.large-text {
+      font-size: 1.3em;
+    }
+
+    body.large-text .action-btn,
+    body.large-text .capture-btn,
+    body.large-text .upload-btn {
+      font-size: 26px;
+      padding: 30px 60px;
+    }
+
+    body.large-text .page-title {
+      font-size: 84px;
+    }
+
+    body.large-text .emotion-value {
+      font-size: 96px;
+    }
+
+    /* High Contrast Focus Indicators for Accessibility */
+    .action-btn:focus,
+    .capture-btn:focus,
+    .upload-btn:focus,
+    .stop-camera-btn:focus,
+    .try-another-btn:focus,
+    .accessibility-btn:focus,
+    .file-input:focus {
+      outline: 4px solid #000;
+      outline-offset: 2px;
+      box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.2), 0 8px 25px rgba(102, 126, 234, 0.4);
+    }
+
+    .action-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 35px rgba(102, 126, 234, 0.5);
+    }
+
+    .action-btn:active {
+      transform: translateY(-1px);
+    }
+
+    .action-btn.capture {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      box-shadow: 0 8px 25px rgba(245, 87, 108, 0.4);
+    }
+
+    .action-btn.capture:hover {
+      box-shadow: 0 12px 35px rgba(245, 87, 108, 0.5);
+    }
+
+    .action-btn.upload {
+      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+      box-shadow: 0 8px 25px rgba(79, 172, 254, 0.4);
+    }
+
+    .action-btn.upload:hover {
+      box-shadow: 0 12px 35px rgba(79, 172, 254, 0.5);
+    }
+
+    .action-btn.accessibility {
+      background: linear-gradient(135deg, #f093fb 0%, #764ba2 100%);
+      box-shadow: 0 8px 25px rgba(118, 75, 162, 0.4);
+    }
+
+    .action-btn.accessibility:hover {
+      box-shadow: 0 12px 35px rgba(118, 75, 162, 0.5);
+    }
+
+    .countdown-display {
+      font-size: 48px;
+      font-weight: bold;
+      color: #667eea;
+      margin: 20px 0;
+        text-align: center;
+      min-height: 60px;
+      display: none;
+    }
+
+    .countdown-display.active {
+      display: block;
+      animation: pulse 1s infinite;
+    }
+
+    .camera-container, .upload-container {
+      display: none;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      border-radius: 20px;
+      padding: 30px;
+      margin: 20px 0;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .camera-preview {
+      width: 100%;
+      max-width: 800px;
+      border-radius: 20px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+      margin: 20px 0;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .capture-btn {
+      background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+      box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+      padding: 15px 40px;
+        margin: 10px;
+    }
+
+    .capture-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(255, 107, 107, 0.5);
+    }
+
+    .stop-camera-btn {
+      background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+      box-shadow: 0 4px 15px rgba(149, 165, 166, 0.3);
+      padding: 12px 30px;
+      font-size: 16px;
+      margin: 10px;
+    }
+
+    .stop-camera-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(149, 165, 166, 0.4);
+    }
+
+    .file-input {
+      margin: 20px;
+      padding: 15px;
+      border: 3px dashed #667eea;
+      border-radius: 15px;
+      background: white;
+      cursor: pointer;
+      font-size: 16px;
+      transition: all 0.3s ease;
+      width: 100%;
+      max-width: 500px;
+    }
+
+    .file-input:hover {
+      border-color: #764ba2;
+      background: #f8f9fa;
+    }
+
+    .upload-btn {
+      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+      box-shadow: 0 6px 20px rgba(79, 172, 254, 0.4);
+      padding: 15px 40px;
+      margin: 10px;
+    }
+
+    .upload-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(79, 172, 254, 0.5);
+    }
+
+    .loading {
+      display: none;
+      color: #667eea;
+      font-size: 18px;
+      font-weight: 600;
+      margin: 20px 0;
+      animation: pulse 1.5s infinite;
+    }
+
+    .error-message {
+      color: #e74c3c;
+      padding: 15px;
+      margin: 15px 0;
+      background: rgba(231, 76, 60, 0.1);
+      border-radius: 12px;
+      border-left: 4px solid #e74c3c;
+      animation: fadeIn 0.5s ease-out;
+      role: alert;
+    }
+
+    .results-container {
+      display: none;
+      width: 100%;
+      margin-top: 40px;
+    }
+
+    .results-row {
+      display: flex;
+      gap: 30px;
+      margin-bottom: 40px;
+      align-items: stretch;
+    }
+
+    .image-card {
+      flex: 1;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      border-radius: 25px;
+      padding: 30px;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 500px;
+      overflow: hidden;
+    }
+
+    .image-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .emotion-card {
+      flex: 1;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 50px;
+      border-radius: 25px;
+      box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+        text-align: center;
+      min-height: 500px;
+      animation: fadeInUp 0.8s ease-out;
+    }
+
+    .emotion-label {
+      font-size: 20px;
+      opacity: 0.9;
+      margin-bottom: 20px;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      font-weight: 300;
+    }
+
+    .emotion-value {
+      font-size: 72px;
+      font-weight: bold;
+      font-family: 'Bigelow Rules', cursive;
+      text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .song-recommendations-section {
+      width: 100%;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      border-radius: 25px;
+      padding: 40px;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+    }
+
+    .recommendations-header {
+      font-size: 36px;
+      font-weight: bold;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 30px;
+        text-align: center;
+      font-family: 'Bigelow Rules', cursive;
+    }
+
+    #ResultArea {
+      width: 100%;
+      animation: slideInRight 0.8s ease-out;
+    }
+
+    .song-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      background: white;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .song-table thead tr {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .song-table thead th {
+      padding: 20px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 18px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .song-table tbody tr {
+      transition: all 0.3s ease;
+      animation: fadeIn 0.5s ease-out;
+    }
+
+    .song-table tbody tr:nth-child(even) {
+      background: #f8f9fa;
+    }
+
+    .song-table tbody tr:hover {
+      transform: translateX(5px);
+      background: rgba(102, 126, 234, 0.1) !important;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .song-table tbody tr:focus {
+      outline: 3px solid #000;
+      outline-offset: -3px;
+    }
+
+    .song-table tbody td {
+      padding: 18px 20px;
+      font-size: 16px;
+      border-bottom: 1px solid #e9ecef;
+    }
+
+    .song-table tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    .try-another-btn {
+      margin: 40px auto 0;
+      display: block;
+    }
+
+    .try-another-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 35px rgba(102, 126, 234, 0.5);
+    }
+
+    .initial-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #666;
+    }
+
+    .initial-state p {
+      font-size: 20px;
+      line-height: 1.6;
+    }
+
+    /* Screen Reader Only */
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border-width: 0;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.05);
+      }
+    }
+
+    @keyframes slideInRight {
+      from {
+        opacity: 0;
+        transform: translateX(50px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+
+    /* Responsive Design */
+    @media (max-width: 900px) {
+      .main-container {
+        padding: 20px;
+        border-radius: 20px;
+      }
+
+      .page-title {
+        font-size: 42px;
+      }
+
+      .results-row {
+        flex-direction: column;
+      }
+
+      .image-card, .emotion-card {
+        min-height: 400px;
+      }
+
+      .emotion-value {
+        font-size: 48px;
+      }
+
+      .button-group {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .action-btn {
+        width: 100%;
+        max-width: 300px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 10px;
+      }
+
+      .main-container {
+        padding: 15px;
+      }
+
+      .page-title {
+        font-size: 32px;
+      }
+
+      .subtitle {
+        font-size: 18px;
+      }
+
+      .emotion-value {
+          font-size: 36px;
+      }
+
+      .recommendations-header {
+        font-size: 28px;
+      }
+    }
+
+    /* Reduced Motion for Accessibility */
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Skip Link for Keyboard Navigation -->
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <!-- Accessibility Toggle Button -->
+  <button 
+    onclick="toggleAccessibilityToolbar()" 
+    class="accessibility-toggle"
+    id="accessibilityToggleBtn"
+    aria-label="Toggle accessibility options"
+    title="Accessibility Options">
+    <strong>Accessibility</strong>
+  </button>
+
+  <!-- Accessibility Toolbar -->
+  <div class="accessibility-toolbar" id="accessibilityToolbar" role="toolbar" aria-label="Accessibility options">
+    <button 
+      onclick="toggleHighContrast()" 
+      class="accessibility-btn" 
+      id="highContrastBtn"
+      aria-label="Toggle high contrast mode"
+      title="High Contrast Mode">
+      <strong>🔆 High Contrast</strong>
+    </button>
+    <button 
+      onclick="increaseFontSize()" 
+      class="accessibility-btn"
+      id="increaseFontBtn"
+      aria-label="Increase font size"
+      title="Increase Text Size">
+      <strong> Larger Text</strong>
+    </button>
+    <button 
+      onclick="decreaseFontSize()" 
+      class="accessibility-btn"
+      id="decreaseFontBtn"
+      aria-label="Decrease font size"
+      title="Normal Text Size">
+      <strong>Normal Text</strong>
+    </button>
+    <button 
+      onclick="toggleTextToSpeech()" 
+      class="accessibility-btn"
+      id="ttsBtn"
+      aria-label="Toggle text to speech"
+      title="Text to Speech">
+      <strong>Read Aloud</strong>
+    </button>
+    <button 
+      onclick="showKeyboardShortcuts()" 
+      class="accessibility-btn"
+      id="shortcutsBtn"
+      aria-label="Show keyboard shortcuts"
+      title="Keyboard Shortcuts">
+      <strong>Shortcuts</strong>
+    </button>
+    <button 
+      onclick="toggleVoiceNavigation()" 
+      class="accessibility-btn"
+      id="voiceNavBtn"
+      aria-label="Toggle voice navigation"
+      title="Voice Navigation">
+      <strong>🎤 Voice Navigation</strong>
+    </button>
+     </div>
+
+  <div class="main-container" id="main-content" role="main">
+    <!-- Page Header -->
+    <header class="page-header" role="banner">
+      <h1 class="page-title">Emotion Detection</h1>
+      <p class="subtitle">Detect emotions and discover music recommendations</p>
+    </header>
+
+    <!-- Action Section -->
+    <section class="action-section" aria-label="Image capture and upload options">
+      <div class="button-group" role="group" aria-label="Action buttons">
+        <button 
+          onclick="showCameraCapture()" 
+          class="action-btn capture"
+          id="captureBtn"
+          aria-label="Open camera to capture image"
+          aria-describedby="capture-description">
+          <span aria-hidden="true"></span> Capture Image
+        </button>
+        <span id="capture-description" class="sr-only">Opens camera interface to capture an image for emotion detection</span>
+        
+        <button 
+          onclick="showUploadOption()" 
+          class="action-btn upload"
+          id="uploadBtn"
+          aria-label="Upload image from computer"
+          aria-describedby="upload-description">
+          <span aria-hidden="true"></span> Upload Image
+        </button>
+        <span id="upload-description" class="sr-only">Opens file picker to upload an image from your computer for emotion detection</span>
+        
+        <button 
+          onclick="startAutoCapture()" 
+          class="action-btn accessibility"
+          id="autoCaptureBtn"
+          aria-label="Auto capture mode for accessibility - automatically captures image after 5 seconds"
+          aria-describedby="auto-capture-description">
+          <span aria-hidden="true"></span> Auto Capture (Accessibility Mode)
+        </button>
+        <span id="auto-capture-description" class="sr-only">Automatically captures an image after 5 seconds. Perfect for users who need hands-free operation. Position yourself in front of the camera and click this button.</span>
+        <button
+          onclick="navigateToProfile()"
+          class="action-btn"
+          id="profileBtn"
+          aria-label="Open user profile to view history"
+          aria-describedby="profile-description">
+          <span aria-hidden="true"></span> Profile
+        </button>
+        <span id="profile-description" class="sr-only">Opens profile page to view capture history and personalized recommendations</span>
+    </div>
+
+      <!-- Camera Capture Section -->
+      <div 
+        class="camera-container" 
+        id="cameraContainer"
+        role="region"
+        aria-label="Camera capture interface"
+        aria-live="polite">
+        <img 
+          id="videoPreview" 
+          class="camera-preview" 
+          alt="Live camera feed for capturing images"
+          role="img"
+          aria-label="Live camera preview" />
+        
+        <!-- Countdown Display for Auto Capture -->
+        <div 
+          class="countdown-display" 
+          id="countdownDisplay"
+          role="status"
+          aria-live="assertive"
+          aria-atomic="true"></div>
+        
+        <div role="group" aria-label="Camera controls">
+          <button 
+            onclick="captureImage()" 
+            class="capture-btn"
+            id="captureImageBtn"
+            aria-label="Capture current frame from camera"
+            aria-describedby="capture-help">
+            <span aria-hidden="true"></span> Capture
+          </button>
+          <span id="capture-help" class="sr-only">Captures the current frame and processes it for emotion detection. You can capture multiple images in succession.</span>
+          
+          <button 
+            onclick="stopCamera()" 
+            class="stop-camera-btn"
+            id="stopCameraBtn"
+            aria-label="Stop camera and close feed">
+            Stop Camera
+          </button>
+        </div>
+        <div 
+          class="loading" 
+          id="cameraLoading"
+          role="status"
+          aria-live="polite"
+          aria-atomic="true">
+          Processing image...
+        </div>
+        <div 
+          class="error-message" 
+          id="cameraErrorMessage"
+          role="alert"
+          aria-live="assertive"
+          aria-atomic="true"></div>
+  </div>
+
+      <!-- Upload Section -->
+      <div 
+        class="upload-container" 
+        id="uploadContainer"
+        role="region"
+        aria-label="Image upload interface"
+        aria-live="polite">
+        <label for="imageInput" class="sr-only">Select an image file to upload</label>
+        <input 
+          type="file" 
+          id="imageInput" 
+          accept="image/*" 
+          class="file-input"
+          aria-label="Choose image file to upload"
+          aria-describedby="file-input-help" />
+        <span id="file-input-help" class="sr-only">Select an image file from your device. Supported formats: PNG, JPG, JPEG, GIF, BMP</span>
+        <br>
+        <button 
+          onclick="uploadAndProcessImage()" 
+          class="upload-btn"
+          id="uploadProcessBtn"
+          aria-label="Upload and process selected image">
+          Upload & Detect Emotion
+        </button>
+        <div 
+          class="loading" 
+          id="loading"
+          role="status"
+          aria-live="polite"
+          aria-atomic="true">
+          Processing image...
+        </div>
+        <div 
+          class="error-message" 
+          id="errorMessage"
+          role="alert"
+          aria-live="assertive"
+          aria-atomic="true"></div>
+      </div>
+    </section>
+
+    <!-- Results Display Section -->
+    <section 
+      class="results-container" 
+      id="resultsContainer"
+      role="region"
+      aria-label="Emotion detection results"
+      aria-live="polite">
+      <div class="results-row">
+        <!-- Left Side: Large Image -->
+        <div class="image-card" role="img" aria-label="Processed image with detected face">
+          <img 
+            id="resultImage" 
+            alt="Processed image showing detected emotion" 
+            style="display: none;"
+            aria-label="Captured and processed image" />
+        </div>
+        
+        <!-- Right Side: Emotion Card -->
+        <div 
+          class="emotion-card" 
+          id="emotionCard"
+          role="region"
+          aria-label="Detected emotion result">
+          <div class="emotion-label">Detected Emotion</div>
+          <div 
+            class="emotion-value" 
+            id="emotionValue"
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"></div>
+        </div>
+      </div>
+
+      <!-- Song Recommendations Section -->
+      <div 
+        class="song-recommendations-section"
+        role="region"
+        aria-label="Song recommendations">
+        <h2 class="recommendations-header"> Song Recommendations</h2>
+        <div 
+          id="ResultArea"
+          role="region"
+          aria-label="Recommended songs table"
+          aria-live="polite"></div>
+      </div>
+
+      <!-- Try Another Button -->
+      <button 
+        onclick="resetToInitialState()" 
+        class="try-another-btn"
+        id="tryAnotherBtn"
+        aria-label="Reset and try another image">
+        <span aria-hidden="true"></span> Try Another Image
+      </button>
+    </section>
+
+    <!-- Initial State -->
+    <div 
+      class="initial-state" 
+      id="initialRecommendationsSection"
+      role="region"
+      aria-label="Initial instructions">
+      <div id="initialResultArea">
+        <p>Choose an option above to detect emotion and get song recommendations.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Screen Reader Announcements -->
+  <div id="sr-announcements" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script type="text/javascript">
+    // Auto-capture variables
+    let autoCaptureTimer = null;
+    let countdownInterval = null;
+    
+    // Accessibility features
+    let textToSpeechEnabled = false;
+    let speechSynthesis = window.speechSynthesis;
+    
+    // Voice Navigation
+    let voiceNavigationEnabled = false;
+    let recognition = null;
+    let isReadingResults = false;
+    
+    // Initialize Speech Recognition
+    function initSpeechRecognition() {
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.continuous = true;
+            recognition.interimResults = false;
+            recognition.lang = 'en-US';
+            
+            recognition.onresult = function(event) {
+                const last = event.results.length - 1;
+                const command = event.results[last][0].transcript.toLowerCase().trim();
+                
+                console.log('Voice command detected:', command);
+                
+                // Process voice commands
+                if (command.includes('click picture') || command.includes('capture picture') || command.includes('take picture')) {
+                    if (document.getElementById('cameraContainer').style.display !== 'none') {
+                        captureImage();
+                        speakText('Capturing picture now', true);
+                    } else {
+                        speakText('Please open camera first', true);
+                    }
+                } else if (command.includes('accessibility click') || command.includes('auto capture') || command.includes('auto click')) {
+                    startAutoCapture();
+                    speakText('Starting auto capture in 5 seconds', true);
+                } else if (command.includes('upload picture') || command.includes('upload image')) {
+                    showUploadOption();
+                    speakText('Upload interface opened', true);
+                } else if (command.includes('read loud') || command.includes('read aloud') || command.includes('read results')) {
+                    readDetectedResults();
+                } else if (command.includes('stop read') || command.includes('stop reading')) {
+                    stopReading();
+                    speakText('Reading stopped', true);
+                }
+            };
+            
+            recognition.onerror = function(event) {
+                console.error('Speech recognition error:', event.error);
+                if (event.error === 'no-speech') {
+                    // Continue listening
+                } else {
+                    speakText('Voice recognition error. Please try again.');
+                }
+            };
+            
+            recognition.onend = function() {
+                // Restart recognition if still enabled
+                if (voiceNavigationEnabled) {
+                    try {
+                        recognition.start();
+                    } catch (e) {
+                        console.log('Recognition already started or error:', e);
+                    }
+                }
+            };
+        } else {
+            alert('Voice recognition is not supported in your browser. Please use Chrome or Edge.');
+        }
+    }
+    
+    // Toggle Voice Navigation
+    function toggleVoiceNavigation() {
+        const btn = document.getElementById('voiceNavBtn');
+        
+        if (!recognition) {
+            initSpeechRecognition();
+        }
+        
+        if (voiceNavigationEnabled) {
+            voiceNavigationEnabled = false;
+            if (recognition) {
+                recognition.stop();
+            }
+            btn.classList.remove('active');
+            btn.innerHTML = '<strong>🎤 Voice Navigation</strong>';
+            announceToScreenReader('Voice navigation disabled');
+            localStorage.setItem('voiceNavigation', 'false');
+            speakText('Voice navigation disabled', true);
+        } else {
+            if (!recognition) {
+                alert('Voice recognition not available. Please use Chrome or Edge browser.');
+                return;
+            }
+            voiceNavigationEnabled = true;
+            try {
+                recognition.start();
+                btn.classList.add('active');
+                btn.innerHTML = '<strong>🎤 Voice ON</strong>';
+                announceToScreenReader('Voice navigation enabled. Say commands like: click picture, accessibility click, upload picture, read loud, or stop read');
+                localStorage.setItem('voiceNavigation', 'true');
+                speakText('Voice navigation enabled. You can say: click picture, accessibility click, upload picture, read loud, or stop read', true);
+            } catch (e) {
+                console.error('Error starting recognition:', e);
+                speakText('Error starting voice recognition. Please try again.');
+            }
+        }
+    }
+    
+    // Read detected results
+    function readDetectedResults() {
+        const emotionValue = document.getElementById('emotionValue');
+        const resultsContainer = document.getElementById('resultsContainer');
+        
+        if (resultsContainer.style.display === 'none' || !emotionValue.textContent) {
+            speakText('No results available yet. Please capture or upload an image first.');
+            return;
+        }
+        
+        isReadingResults = true;
+        const emotion = emotionValue.textContent.trim();
+        let readText = 'Detected emotion: ' + emotion + '. ';
+        
+        // Get song recommendations
+        const resultArea = document.getElementById('ResultArea');
+        const table = resultArea.querySelector('table');
+        
+        if (table) {
+            const rows = table.querySelectorAll('tbody tr');
+            if (rows.length > 0) {
+                readText += 'Song recommendations: ';
+                rows.forEach((row, index) => {
+                    if (index < 5) { // Read first 5 songs
+                        const cells = row.querySelectorAll('td');
+                        if (cells.length >= 4) {
+                            const songName = cells[0].textContent.trim();
+                            const album = cells[1].textContent.trim();
+                            const artist = cells[2].textContent.trim();
+                            const songType = cells[3].textContent.trim();
+                            readText += 'Song ' + (index + 1) + ': ' + songName + ' by ' + artist + ', album ' + album + ', type ' + songType + '. ';
+                        }
+                    }
+                });
+                if (rows.length > 5) {
+                    readText += 'And ' + (rows.length - 5) + ' more songs.';
+                }
+            }
+        }
+        
+        speakText(readText);
+    }
+    
+    // Stop reading
+    function stopReading() {
+        if (speechSynthesis) {
+            speechSynthesis.cancel();
+            isReadingResults = false;
+        }
+    }
+    
+    // High Contrast Toggle
+    function toggleHighContrast() {
+      const body = document.body;
+      const btn = document.getElementById('highContrastBtn');
+      if (body.classList.contains('high-contrast')) {
+        body.classList.remove('high-contrast');
+        btn.classList.remove('active');
+        btn.innerHTML = '<strong> High Contrast</strong>';
+        announceToScreenReader('High contrast mode disabled');
+        localStorage.setItem('highContrast', 'false');
+      } else {
+        body.classList.add('high-contrast');
+        btn.classList.add('active');
+        btn.innerHTML = '<strong> High Contrast ON</strong>';
+        announceToScreenReader('High contrast mode enabled');
+        localStorage.setItem('highContrast', 'true');
+      }
+    }
+    
+    // Font Size Controls
+    function increaseFontSize() {
+      document.body.classList.add('large-text');
+      document.getElementById('increaseFontBtn').classList.add('active');
+      document.getElementById('decreaseFontBtn').classList.remove('active');
+      announceToScreenReader('Large text mode enabled');
+      localStorage.setItem('largeText', 'true');
+    }
+    
+    function decreaseFontSize() {
+      document.body.classList.remove('large-text');
+      document.getElementById('increaseFontBtn').classList.remove('active');
+      document.getElementById('decreaseFontBtn').classList.remove('active');
+      announceToScreenReader('Normal text size restored');
+      localStorage.setItem('largeText', 'false');
+    }
+    
+    // Text to Speech
+    function toggleTextToSpeech() {
+      const btn = document.getElementById('ttsBtn');
+      if (textToSpeechEnabled) {
+        textToSpeechEnabled = false;
+        speechSynthesis.cancel();
+        btn.classList.remove('active');
+        btn.innerHTML = '<strong>Read Aloud</strong>';
+        announceToScreenReader('Text to speech disabled');
+        localStorage.setItem('textToSpeech', 'false');
+      } else {
+        textToSpeechEnabled = true;
+        btn.classList.add('active');
+        btn.innerHTML = '<strong> Read Aloud ON</strong>';
+        speakText('Text to speech enabled. Results will be read aloud automatically.');
+        announceToScreenReader('Text to speech enabled');
+        localStorage.setItem('textToSpeech', 'true');
+      }
+    }
+    
+    function speakText(text, force = false) {
+      // Allow speaking if text-to-speech is enabled OR if forced (for voice navigation feedback)
+      if ((textToSpeechEnabled || force) && speechSynthesis) {
+        speechSynthesis.cancel(); // Cancel any ongoing speech
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = 1.0;
+        utterance.pitch = 1.0;
+        utterance.volume = 1.0;
+        speechSynthesis.speak(utterance);
+      }
+    }
+    
+    // Keyboard Shortcuts Help
+    function showKeyboardShortcuts() {
+      const shortcuts = [
+        'Keyboard Shortcuts:',
+        'Escape - Stop camera or cancel auto-capture',
+        'Enter - Activate focused button',
+        'Tab - Navigate between elements',
+        'C - Open camera capture',
+        'U - Open upload interface',
+        'A - Start auto capture mode',
+        'S - Stop camera'
+      ].join('\n');
+      
+      alert(shortcuts);
+      speakText(shortcuts.replace(/\n/g, '. '));
+    }
+    
+    // Load saved accessibility preferences
+    function loadAccessibilitySettings() {
+      if (localStorage.getItem('highContrast') === 'true') {
+        toggleHighContrast();
+      }
+      if (localStorage.getItem('largeText') === 'true') {
+        increaseFontSize();
+      }
+      if (localStorage.getItem('textToSpeech') === 'true') {
+        toggleTextToSpeech();
+      }
+      // Initialize speech recognition on load (but don't start)
+      if (typeof window !== 'undefined') {
+        initSpeechRecognition();
+      }
+      if (localStorage.getItem('voiceNavigation') === 'true') {
+        // Start voice navigation if it was enabled
+        setTimeout(() => {
+          toggleVoiceNavigation();
+        }, 1000);
+      }
+    }
+    
+    // Toggle Accessibility Toolbar
+    function toggleAccessibilityToolbar() {
+      const toolbar = document.getElementById('accessibilityToolbar');
+      const toggleBtn = document.getElementById('accessibilityToggleBtn');
+      
+      if (toolbar.classList.contains('show')) {
+        toolbar.classList.remove('show');
+        toggleBtn.innerHTML = '<strong> Accessibility</strong>';
+        announceToScreenReader('Accessibility options hidden');
+      } else {
+        toolbar.classList.add('show');
+        toggleBtn.innerHTML = '<strong>✕ Close</strong>';
+        announceToScreenReader('Accessibility options shown');
+      }
+    }
+    
+    // Initialize on page load
+    window.addEventListener('load', function() {
+      loadAccessibilitySettings();
+    });
+
+    // Accessibility: Announce to screen readers
+    function announceToScreenReader(message) {
+      const announcement = document.getElementById('sr-announcements');
+      announcement.textContent = message;
+      setTimeout(() => {
+        announcement.textContent = '';
+      }, 1000);
+    }
+
+    // Auto-capture function for accessibility
+    function startAutoCapture() {
+        // Cancel any existing countdown first
+        cancelAutoCapture();
+        
+        // First, open camera if not already open
+        const cameraContainer = document.getElementById('cameraContainer');
+        if (cameraContainer.style.display === 'none') {
+            showCameraCapture();
+            // Wait a moment for camera to initialize
+            setTimeout(() => {
+                startCountdown();
+            }, 1500);
+        } else {
+            startCountdown();
+        }
+    }
+
+    function startCountdown() {
+        const countdownDisplay = document.getElementById('countdownDisplay');
+        const cameraContainer = document.getElementById('cameraContainer');
+        const autoCaptureBtn = document.getElementById('autoCaptureBtn');
+        
+        // Make sure camera is visible
+        cameraContainer.style.display = 'block';
+        
+        // Disable the button during countdown
+        autoCaptureBtn.disabled = true;
+        autoCaptureBtn.setAttribute('aria-busy', 'true');
+        
+        let secondsLeft = 5;
+        countdownDisplay.classList.add('active');
+        countdownDisplay.textContent = secondsLeft;
+        countdownDisplay.setAttribute('aria-label', 'Countdown: ' + secondsLeft + ' seconds');
+        
+        announceToScreenReader('Auto capture starting. Get ready. ' + secondsLeft + ' seconds remaining.');
+        
+        // Clear any existing intervals
+        if (countdownInterval) {
+            clearInterval(countdownInterval);
+        }
+        
+        countdownInterval = setInterval(() => {
+            secondsLeft--;
+            countdownDisplay.textContent = secondsLeft;
+            countdownDisplay.setAttribute('aria-label', 'Countdown: ' + secondsLeft + ' seconds');
+            
+            if (secondsLeft > 0) {
+                announceToScreenReader(secondsLeft + ' seconds');
+            } else {
+                clearInterval(countdownInterval);
+                countdownInterval = null;
+                announceToScreenReader('Capturing now!');
+            }
+        }, 1000);
+        
+        // Clear any existing timer
+        if (autoCaptureTimer) {
+            clearTimeout(autoCaptureTimer);
+        }
+        
+        // Auto-capture after 5 seconds
+        autoCaptureTimer = setTimeout(() => {
+            // Clear countdown display
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+                countdownInterval = null;
+            }
+            countdownDisplay.classList.remove('active');
+            countdownDisplay.textContent = '';
+            countdownDisplay.setAttribute('aria-label', '');
+            
+            // Re-enable button
+            autoCaptureBtn.disabled = false;
+            autoCaptureBtn.setAttribute('aria-busy', 'false');
+            
+            // Automatically capture - ensure this is called
+            console.log('Auto-capture: Calling captureImage()');
+            captureImage();
+            
+            announceToScreenReader('Image captured automatically. Processing emotion...');
+            autoCaptureTimer = null;
+        }, 5000);
+    }
+
+    function cancelAutoCapture() {
+        if (autoCaptureTimer) {
+            clearTimeout(autoCaptureTimer);
+            autoCaptureTimer = null;
+        }
+        if (countdownInterval) {
+            clearInterval(countdownInterval);
+            countdownInterval = null;
+        }
+        const countdownDisplay = document.getElementById('countdownDisplay');
+        countdownDisplay.classList.remove('active');
+        countdownDisplay.textContent = '';
+        countdownDisplay.setAttribute('aria-label', '');
+        
+        const autoCaptureBtn = document.getElementById('autoCaptureBtn');
+        autoCaptureBtn.disabled = false;
+        autoCaptureBtn.setAttribute('aria-busy', 'false');
+        
+        announceToScreenReader('Auto capture cancelled');
+    }
+
+    // Keyboard Navigation Support
+    document.addEventListener('keydown', function(e) {
+      // Don't trigger shortcuts when typing in input fields
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+        return;
+      }
+      
+      // Escape key to stop camera or cancel auto-capture
+      if (e.key === 'Escape') {
+        // First cancel any ongoing auto-capture
+        if (autoCaptureTimer || countdownInterval) {
+          cancelAutoCapture();
+          return;
+        }
+        // Otherwise stop camera
+        const cameraContainer = document.getElementById('cameraContainer');
+        if (cameraContainer.style.display !== 'none') {
+          stopCamera();
+          announceToScreenReader('Camera stopped');
+        }
+      }
+      // Enter key on buttons
+      if (e.key === 'Enter' && e.target.tagName === 'BUTTON') {
+        e.target.click();
+      }
+      // Keyboard shortcuts (only if not in input field)
+      if (!e.ctrlKey && !e.altKey && !e.metaKey) {
+        if (e.key === 'c' || e.key === 'C') {
+          e.preventDefault();
+          e.stopPropagation();
+          showCameraCapture();
+        return false;
+        }
+        if (e.key === 'u' || e.key === 'U') {
+          e.preventDefault();
+          e.stopPropagation();
+          showUploadOption();
+          return false;
+        }
+        if (e.key === 'a' || e.key === 'A') {
+          e.preventDefault();
+          e.stopPropagation();
+          startAutoCapture();
+          return false;
+        }
+        if (e.key === 's' || e.key === 'S') {
+          e.preventDefault();
+          e.stopPropagation();
+          stopCamera();
+          return false;
+        }
+        if (e.key === 'h' || e.key === 'H') {
+          e.preventDefault();
+          e.stopPropagation();
+          showKeyboardShortcuts();
+          return false;
+        }
+        if (e.key === 'p' || e.key === 'P') {
+          e.preventDefault();
+          e.stopPropagation();
+          navigateToProfile();
+          return false;
+        }
+      }
+    });
+
+    function showCameraCapture() {
+        // Cancel any ongoing auto-capture
+        cancelAutoCapture();
+        
+        document.getElementById('uploadContainer').style.display = 'none';
+        const cameraContainer = document.getElementById('cameraContainer');
+        cameraContainer.style.display = 'block';
+        const videoPreview = document.getElementById('videoPreview');
+        videoPreview.src = '/video_feed?t=' + new Date().getTime();
+        
+        // Focus management for accessibility
+        document.getElementById('captureImageBtn').focus();
+        announceToScreenReader('Camera opened. Use Capture button to take photos. You can capture multiple images. Or use Auto Capture for hands-free operation.');
+    }
+
+    function showUploadOption() {
+        stopCamera();
+        document.getElementById('cameraContainer').style.display = 'none';
+        const uploadContainer = document.getElementById('uploadContainer');
+        uploadContainer.style.display = 'block';
+        
+        // Focus management
+        document.getElementById('imageInput').focus();
+        announceToScreenReader('Upload interface opened. Select an image file to upload.');
+    }
+
+    function stopCamera() {
+        // Cancel any ongoing auto-capture
+        cancelAutoCapture();
+        
+        const videoPreview = document.getElementById('videoPreview');
+        videoPreview.src = '';
+        $.ajax({
+            url: '/stop_camera',
+            type: 'POST',
+            success: function(response) {
+                console.log('Camera released');
+                announceToScreenReader('Camera stopped');
+            },
+            error: function(xhr) {
+                console.error('Error releasing camera');
+            }
+        });
+    }
+
+    function captureImage() {
+        const loadingDiv = document.getElementById('cameraLoading');
+        const errorDiv = document.getElementById('cameraErrorMessage');
+        const resultImage = document.getElementById('resultImage');
+        const emotionValue = document.getElementById('emotionValue');
+        const resultsContainer = document.getElementById('resultsContainer');
+        const initialSection = document.getElementById('initialRecommendationsSection');
+        const initialResultArea = document.getElementById('initialResultArea');
+        const cameraContainer = document.getElementById('cameraContainer');
+        const uploadContainer = document.getElementById('uploadContainer');
+        
+        errorDiv.textContent = '';
+        errorDiv.style.display = 'none';
+        loadingDiv.style.display = 'block';
+        loadingDiv.setAttribute('aria-busy', 'true');
+        
+        announceToScreenReader('Capturing image and processing emotion...');
+        
+        $.ajax({
+            url: '/capture',
+            type: 'POST',
+            success: function(response) {
+                loadingDiv.style.display = 'none';
+                loadingDiv.setAttribute('aria-busy', 'false');
+                
+                if (response.success) {
+                    // Keep camera open for multiple captures - DON'T hide camera container
+                    uploadContainer.style.display = 'none';
+                    initialSection.style.display = 'none';
+                    initialResultArea.style.display = 'none';
+                    
+                    resultImage.src = 'data:image/jpeg;base64,' + response.image;
+                    resultImage.style.display = 'block';
+                    
+                    emotionValue.textContent = response.emotion;
+                    
+                    CreateHtmlTable(response.songs || response.recommendations);
+                    
+                    resultsContainer.style.display = 'block';
+                    
+                    // Announce results to screen readers
+                    const resultMessage = 'Emotion detected: ' + response.emotion + '. ' + 
+                        (response.recommendations ? response.recommendations.length : 0) + 
+                        ' song recommendations available. You can capture another image.';
+                    announceToScreenReader(resultMessage);
+                    
+                    // Text to speech for results
+                    if (textToSpeechEnabled) {
+                        speakText('Emotion detected: ' + response.emotion + '. ' + 
+                            (response.recommendations ? response.recommendations.length : 0) + 
+                            ' song recommendations are available.');
+                    }
+                    
+                    // Scroll to results for better UX
+                    resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    
+                    // Keep camera running - don't stop it
+                    // Focus back to capture button for next capture
+                    setTimeout(() => {
+                        document.getElementById('captureImageBtn').focus();
+                    }, 500);
+                } else {
+                    errorDiv.textContent = response.error || 'Unknown error occurred';
+                    errorDiv.style.display = 'block';
+                    announceToScreenReader('Error: ' + (response.error || 'Unknown error occurred'));
+                }
+            },
+            error: function(xhr) {
+                loadingDiv.style.display = 'none';
+                loadingDiv.setAttribute('aria-busy', 'false');
+                let errorMsg = 'Error capturing image. ';
+                if (xhr.responseJSON && xhr.responseJSON.error) {
+                    errorMsg += xhr.responseJSON.error;
+                } else {
+                    errorMsg += 'Please try again.';
+                }
+                errorDiv.textContent = errorMsg;
+                errorDiv.style.display = 'block';
+                announceToScreenReader(errorMsg);
+            }
+        });
+    }
+
+    function uploadAndProcessImage() {
+        const fileInput = document.getElementById('imageInput');
+        const loadingDiv = document.getElementById('loading');
+        const errorDiv = document.getElementById('errorMessage');
+        const resultImage = document.getElementById('resultImage');
+        const emotionValue = document.getElementById('emotionValue');
+        const resultsContainer = document.getElementById('resultsContainer');
+        const initialSection = document.getElementById('initialRecommendationsSection');
+        const initialResultArea = document.getElementById('initialResultArea');
+        const cameraContainer = document.getElementById('cameraContainer');
+        const uploadContainer = document.getElementById('uploadContainer');
+        
+        errorDiv.textContent = '';
+        errorDiv.style.display = 'none';
+        
+        if (!fileInput.files || fileInput.files.length === 0) {
+            errorDiv.textContent = 'Please select an image file first.';
+            errorDiv.style.display = 'block';
+            announceToScreenReader('Please select an image file first');
+            return;
+        }
+        
+        const file = fileInput.files[0];
+        const formData = new FormData();
+        formData.append('image', file);
+        
+        loadingDiv.style.display = 'block';
+        loadingDiv.setAttribute('aria-busy', 'true');
+        announceToScreenReader('Uploading and processing image...');
+        
+        $.ajax({
+            url: '/upload',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                loadingDiv.style.display = 'none';
+                loadingDiv.setAttribute('aria-busy', 'false');
+                
+                if (response.success) {
+                    cameraContainer.style.display = 'none';
+                    uploadContainer.style.display = 'none';
+                    initialSection.style.display = 'none';
+                    initialResultArea.style.display = 'none';
+                    
+                    resultImage.src = 'data:image/jpeg;base64,' + response.image;
+                    resultImage.style.display = 'block';
+                    
+                    emotionValue.textContent = response.emotion;
+                    
+                    CreateHtmlTable(response.songs || response.recommendations);
+                    
+                    resultsContainer.style.display = 'block';
+                    
+                    announceToScreenReader('Emotion detected: ' + response.emotion + '. ' + 
+                        (response.recommendations ? response.recommendations.length : 0) + 
+                        ' song recommendations available.');
+                    
+                    resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                } else {
+                    errorDiv.textContent = response.error || 'Unknown error occurred';
+                    errorDiv.style.display = 'block';
+                    announceToScreenReader('Error: ' + (response.error || 'Unknown error occurred'));
+                }
+            },
+            error: function(xhr) {
+                loadingDiv.style.display = 'none';
+                loadingDiv.setAttribute('aria-busy', 'false');
+                let errorMsg = 'Error processing image. ';
+                if (xhr.responseJSON && xhr.responseJSON.error) {
+                    errorMsg += xhr.responseJSON.error;
+                } else {
+                    errorMsg += 'Please try again.';
+                }
+                errorDiv.textContent = errorMsg;
+                errorDiv.style.display = 'block';
+                announceToScreenReader(errorMsg);
+            }
+        });
+    }
+
+    function CreateHtmlTable(data) {
+      $("#ResultArea").html("");
+      
+      if (!data || data.length === 0) {
+          $("#ResultArea").html("<p style='color: #666; padding: 20px; text-align: center; font-size: 18px;'>No recommendations available.</p>");
+          return;
+      }
+      
+      var table = $("<table class='song-table' id='songTable' role='table' aria-label='Recommended songs'></table>").appendTo("#ResultArea");
+      var thead = $("<thead></thead>").appendTo(table);
+      var tbody = $("<tbody></tbody>").appendTo(table);
+      
+      var rowHeader = $("<tr role='row'></tr>").appendTo(thead);
+      $("<th role='columnheader' scope='col'>Name</th>").appendTo(rowHeader);
+      $("<th role='columnheader' scope='col'>Album</th>").appendTo(rowHeader);
+      $("<th role='columnheader' scope='col'>Artist</th>").appendTo(rowHeader);
+      $("<th role='columnheader' scope='col'>Type</th>").appendTo(rowHeader);
+      $("<th role='columnheader' scope='col'>Action</th>").appendTo(rowHeader);
+      
+      $.each(data, function (i, value) {
+          const songName = value.Song || value.Name || '';
+          const albumName = value.Album || value.Genre || value.MoodLabel || '-';
+          const artistName = value.Artist || '';
+          const songType = value.Type || value.SongType || value.Genre || '';
+
+          var row = $("<tr role='row' tabindex='0'></tr>").appendTo(tbody);
+          $("<td role='cell'></td>").text(songName).appendTo(row);
+          $("<td role='cell'></td>").text(albumName).appendTo(row);
+          $("<td role='cell'></td>").text(artistName).appendTo(row);
+          $("<td role='cell'></td>").text(songType).appendTo(row);
+          const actionCell = $("<td role='cell'></td>").appendTo(row);
+          const likeBtn = $("<button class='btn btn-sm btn-outline-primary'>Like</button>");
+          likeBtn.on('click', function () {
+              likeSong({
+                  Song: songName,
+                  Album: albumName,
+                  Artist: artistName,
+                  Type: songType
+              });
+          });
+          actionCell.append(likeBtn);
+      });
+    }
+
+    function resetToInitialState() {
+        document.getElementById('resultsContainer').style.display = 'none';
+        document.getElementById('initialRecommendationsSection').style.display = 'block';
+        document.getElementById('initialResultArea').style.display = 'block';
+        document.getElementById('resultImage').style.display = 'none';
+        document.getElementById('resultImage').src = '';
+        document.getElementById('emotionValue').textContent = '';
+        document.getElementById('ResultArea').innerHTML = '';
+        document.getElementById('initialResultArea').innerHTML = '<p>Choose an option above to detect emotion and get song recommendations.</p>';
+        stopCamera();
+        announceToScreenReader('Reset to initial state. Ready for new image.');
+        
+        // Focus management
+        document.getElementById('captureBtn').focus();
+    }
+
+    window.addEventListener('beforeunload', function() {
+        stopCamera();
+    });
+    
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            const cameraContainer = document.getElementById('cameraContainer');
+            if (cameraContainer.style.display !== 'none') {
+                stopCamera();
+            }
+        }
+    });
+
+    function navigateToProfile() {
+        window.location.href = '/profile';
+    }
+
+    function likeSong(songData) {
+        fetch('/like_song', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ song: songData })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                announceToScreenReader('Song liked successfully.');
+            } else {
+                announceToScreenReader(data.error || 'Failed to like song.');
+            }
+        })
+        .catch(() => {
+            announceToScreenReader('Failed to like song.');
+        });
+    }
+  </script>
+</body>
+</html>

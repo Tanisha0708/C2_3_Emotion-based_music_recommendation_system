@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Profile - Emotion Music Recommendation</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link type="text/css" href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet" />
+  <style>
+    body {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .profile-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: #fff;
+      border-radius: 25px;
+      padding: 30px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    }
+    .history-card {
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      margin-bottom: 25px;
+    }
+    .history-image {
+      width: 100%;
+      border-radius: 15px;
+      object-fit: cover;
+      max-height: 240px;
+    }
+    .songs-table th {
+      background: #667eea;
+      color: #fff;
+    }
+    .songs-table td, .songs-table th {
+      padding: 10px;
+    }
+    .back-link {
+      text-decoration: none;
+      font-weight: bold;
+      color: #764ba2;
+    }
+  </style>
+</head>
+<body>
+  <div class="profile-container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h1>User Profile</h1>
+      <a href="{{ url_for('index') }}" class="back-link">← Back to Home</a>
+    </div>
+
+    <div class="mb-5">
+      <h3>Personalized Recommendation</h3>
+      {% if personal_emotion %}
+        <p>Most frequent emotion: <strong>{{ personal_emotion }}</strong></p>
+        {% if personal_recommendations %}
+          <div class="table-responsive">
+            <table class="table table-striped songs-table">
+              <thead>
+                <tr>
+                  <th>Song</th>
+                  <th>Album</th>
+                  <th>Artist</th>
+                  <th>Type</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for song in personal_recommendations %}
+                  <tr>
+                    <td>{{ song.Song }}</td>
+                    <td>{{ song.Album or song.MoodLabel }}</td>
+                    <td>{{ song.Artist }}</td>
+                    <td>{{ song.Type or song.Genre }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <p>No personalized recommendations available yet.</p>
+        {% endif %}
+      {% else %}
+        <p>No history yet. Capture or upload an image to start building your profile.</p>
+      {% endif %}
+    </div>
+
+    <div class="mb-5">
+      <h3>Liked Songs</h3>
+      {% if liked_songs %}
+        <div class="table-responsive">
+          <table class="table table-striped songs-table">
+            <thead>
+              <tr>
+                <th>Song</th>
+                <th>Album</th>
+                <th>Artist</th>
+                <th>Type</th>
+                <th>Liked On</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for song in liked_songs %}
+                <tr>
+                  <td>{{ song.Song }}</td>
+                  <td>{{ song.Album }}</td>
+                  <td>{{ song.Artist }}</td>
+                  <td>{{ song.Type }}</td>
+                  <td>{{ song.timestamp }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <p>No liked songs yet. Use the like button on the recommendations list to save your favorites.</p>
+      {% endif %}
+    </div>
+
+    <div>
+      <h3>Capture History</h3>
+      {% if history %}
+        {% for entry in history %}
+          <div class="card history-card">
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-4 mb-3 mb-md-0">
+                  {% if entry.image %}
+                    <img src="data:image/jpeg;base64,{{ entry.image }}" alt="Captured emotion" class="history-image">
+                  {% else %}
+                    <div class="history-image d-flex align-items-center justify-content-center bg-light text-muted">
+                      No image
+                    </div>
+                  {% endif %}
+                </div>
+                <div class="col-md-8">
+                  <h5>Emotion: {{ entry.emotion }}</h5>
+                  <p class="text-muted mb-2">Captured: {{ entry.timestamp }}</p>
+                  {% if entry.songs %}
+                    <div class="table-responsive">
+                      <table class="table table-sm songs-table">
+                        <thead>
+                          <tr>
+                            <th>Song</th>
+                            <th>Artist</th>
+                            <th>Type</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {% for song in entry.songs %}
+                            <tr>
+                              <td>{{ song.Song }}</td>
+                              <td>{{ song.Artist }}</td>
+                              <td>{{ song.Type or song.Genre }}</td>
+                            </tr>
+                          {% endfor %}
+                        </tbody>
+                      </table>
+                    </div>
+                  {% else %}
+                    <p>No songs recorded for this capture.</p>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <p>No capture history yet.</p>
+      {% endif %}
+    </div>
+  </div>
+</body>
+</html>
+
